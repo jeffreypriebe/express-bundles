@@ -1,3 +1,5 @@
+This fork uses [terser](https://www.npmjs.com/package/terser) instead of uglify-js to get current JS in the bundles
+
 From ktsuench/express-bundles fork, but using Jul 31, 2017 commit [4168890](https://github.com/jeffreypriebe/express-bundles/commit/41688909dd287b8566c38dc79807587d509f28e9)
 
 # Express Bundles

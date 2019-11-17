@@ -2,9 +2,8 @@ var
 async = require('async'),
 fs = require('fs'),
 path = require('path'),
-request = require('request'),
 cleanCss = require('clean-css'),
-uglifyJs = require('uglify-js');
+terser = require('terser');
 
 exports.middleware = function(options) {
   var bundles = {};
@@ -204,24 +203,27 @@ exports.middleware = function(options) {
       break;
 
     case '.js':
+      const onError = error => {
+				console.error('Error minifying js file.', name);
+				console.error(error);
+      }
+
       // mangle and minify js
-      var ast = null;
-      data.forEach(function(code) {
-        ast = uglifyJs.parse(code, {
-          toplevel: ast
-        })
-      })
-      ast.figure_out_scope()
-      ast = ast.transform(uglifyJs.Compressor({
-        warnings: false
-      }))
-      ast.figure_out_scope()
-      ast.compute_char_frequency()
-      ast.mangle_names()
-      data = ast.print_to_string({
-        comments: /^\/*!/
-      });
-      fs.writeFile(path.join(options.src, name), data, done);
+      const inputData = Array.isArray(data) ? data.join('') : data
+
+      try {
+        const output = terser.minify(inputData, options.terser)
+
+        if (output.error) {
+          onError(output.error)
+          break;
+        }
+
+        fs.writeFile(path.join(options.src, name), output.code, done);
+      } catch (err) {
+        onError(err)
+        break;
+      }
       break;
     }
   }
